@@ -2,7 +2,11 @@ const express = require('express');
 const app = express();
 var pg = require('pg');
 require('dotenv').config({ path: '.env' });
+const cors = require('cors');
+
+
 // const pool = require('./db')
+app.use(cors());
 
 //middlewares
 app.use(express.json());
