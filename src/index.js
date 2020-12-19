@@ -19,6 +19,6 @@ app.use("/haveDiseases/", require('./routes/haveDiseases.js'));
 app.use("/appointment/", require('./routes/appointment.js'));
 
 
-app.listen(4000)
+app.listen(process.env.PORT || 4000)
 console.log('server on port 4000');
 
