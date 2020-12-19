@@ -17,6 +17,7 @@ app.use("/diseases/", require('./routes/diseases.js'));
 app.use("/patient/", require('./routes/patient.js'));
 app.use("/haveDiseases/", require('./routes/haveDiseases.js'));
 app.use("/appointment/", require('./routes/appointment.js'));
+app.use("/doctor/", require('./routes/doctor.js'));
 
 
 app.listen(process.env.PORT || 4000)
