@@ -19,7 +19,7 @@ app.use("/hospital/", require('./routes/hospital.js'));
 app.use("/clinic/", require('./routes/clinic.js'));
 app.use("/diseases/", require('./routes/diseases.js'));
 app.use("/patient/", require('./routes/patient.js'));
-app.use("/haveDiseases/", require('./routes/haveDiseases.js'));
+app.use("/have-diseases/", require('./routes/haveDiseases.js'));
 app.use("/appointment/", require('./routes/appointment.js'));
 app.use("/doctor/", require('./routes/doctor.js'));
 
