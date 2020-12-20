@@ -58,7 +58,16 @@ exports.update = async (req, res) => {
 
 exports.find = async (req, res) => {
     try {
-        const clinic = await pool.query("SELECT * from clinic WHERE clinic_id = $1", [req.params.clinic_id]);
+        const clinic = await pool.query(`SELECT * from clinic c
+        right join doctor d on c.clinic_id = d.clinic_id
+        left join person p on d.tc_no = p.tc_no
+        where c.clinic_id = $1`, [req.params.clinic_id]);
+        if (!clinic) {
+            return res.status(404).json({
+                message: clinicEnums.NOT_FOUND
+            });
+        }
+
         return res.status(200).json({
             message: clinicEnums.FOUND,
             clinic: clinic.rows
@@ -73,7 +82,9 @@ exports.find = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const clinics = await pool.query("SELECT * from clinic");
+        const clinics = await pool.query(`SELECT * from clinic c
+        right join doctor d on c.clinic_id = d.clinic_id
+        left join person p on d.tc_no = p.tc_no`);
         return res.status(200).json(clinics.rows);
 
     } catch (error) {

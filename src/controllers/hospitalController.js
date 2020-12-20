@@ -58,7 +58,16 @@ exports.update = async (req, res) => {
 
 exports.find = async (req, res) => {
     try {
-        const hospital = await pool.query("SELECT * from hospital WHERE hospital_id = $1", [req.params.hospital_id]);
+        const hospital = await pool.query(`select * from hospital h
+        right join doctor d on d.hospital_id = h.hospital_id
+        where h.hospital_id = $1
+        `, [req.params.hospital_id]);
+
+        if (!hospital) {
+            return res.status(404).json({
+                message: hospitalEnums.NOT_FOUND
+            });
+        }
         return res.status(200).json({
             message: hospitalEnums.FOUND,
             hospital: hospital.rows
@@ -73,7 +82,9 @@ exports.find = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const hospitals = await pool.query("SELECT * from hospital");
+        const hospitals = await pool.query(`select * from hospital h
+        right join doctor d on d.hospital_id = h.hospital_id
+        `);
         return res.status(200).json(hospitals.rows);
 
     } catch (error) {
