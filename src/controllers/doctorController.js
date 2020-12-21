@@ -56,6 +56,30 @@ exports.update = async (req, res) => {
     }
 };
 
+//
+exports.busyDates = async (req, res) => {
+    try {
+        const busyDates = await pool.query(`select appointment_date, appointment_time from have_appointment
+         where doctor_id = $1`, [req.params.doctor_id]);
+
+        if (!busyDates) {
+            return res.status(404).json({
+                message: doctorEnums.BUSY_DATES_NOT_FOUND
+            });
+        }
+
+        return res.status(200).json({
+            message: doctorEnums.BUSY_DATES_FOUND,
+            appointment: busyDates.rows
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            ...error
+        });
+    }
+}
+
 exports.find = async (req, res) => {
     try {
         const doctor = await pool.query(`select * from doctor d

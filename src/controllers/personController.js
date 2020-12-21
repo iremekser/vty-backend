@@ -16,7 +16,7 @@ exports.register = async (req, res) => {
         const token = jwt.sign(
             {
                 email: req.body.email,
-                tc: req.body.tc_no,
+                tc_no: req.body.tc_no,
                 role: newQuery.rows[0].user_type,
                 patient_id: patientQuery.rows[0].patient_id
             },
@@ -59,7 +59,7 @@ exports.login = async (req, res) => {
         const token = jwt.sign(
             {
                 email: newLogin.rows[0].email,
-                tc: req.body.tc_no,
+                tc_no: req.body.tc_no,
                 role: newLogin.rows[0].user_type
             },
             process.env.JWT_KEY,
@@ -103,9 +103,14 @@ exports.delete = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const { location, user_type } = req.body;
-        const person = await pool.query("UPDATE person set location = $1, user_type = $2 where tc_no = $3 RETURNING *",
-            [location, user_type, req.params.tc_no]);
+        let q = ""
+        for (let i = 0; i < Object.keys(req.body).length; i++) {
+            const element = Object.keys(req.body)[i];
+            q += element + " = $" + (i + 1) + ','
+        }
+        q = q.substring(0, q.length - 1);
+        const person = await pool.query(`UPDATE person set ${q} where tc_no = $${Object.keys(req.body).length + 1} RETURNING *`,
+            [...Object.values(req.body), req.params.tc_no]);
         if (!person) {
             return res.status(404).json({
                 message: personEnums.NOT_FOUND
@@ -127,12 +132,13 @@ exports.find = async (req, res) => {
         let person;
         const userType = await pool.query(`select user_type from person
         where tc_no = $1`, [req.params.tc_no])
-        if (!userType) {
+
+        if (!userType.rows[0].user_type) {
             person = await pool.query(`SELECT * FROM person p
                 LEFT JOIN patient pp ON pp.tc_no = p.tc_no
                 where p.tc_no = $1`, [req.params.tc_no]);
         }
-        else if (userType) {
+        else if (userType.rows[0].user_type) {
             person = await pool.query(`SELECT * FROM person p
                 LEFT JOIN doctor pp ON pp.tc_no = p.tc_no
                 where p.tc_no = $1`, [req.params.tc_no]);
