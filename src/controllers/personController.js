@@ -165,7 +165,13 @@ exports.find = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const people = await pool.query("SELECT * from person");
+        let people;
+        if (req.query.gender) {
+            people = await pool.query(`select fonksiyon3($1)`, [req.query.gender]);
+            console.log(people.rows);
+        }
+        else
+            people = await pool.query("SELECT * from person");
         people.rows.forEach(element => {
             delete element['password']
         });

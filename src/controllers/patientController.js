@@ -91,3 +91,40 @@ exports.list = async (req, res) => {
         });
     }
 };
+
+exports.appCountByDoctor = async (req, res) => {
+    try {
+        const doctors = await pool.query(`select p.name, p.surname, c.clinic_name, di.c
+        from (select doctor_id, count(*) as c from patient pa
+                left join person pe on pa.tc_no = pe.tc_no
+                left join have_appointment ha on pa.patient_id = ha.patient_id
+                where pa.tc_no = $1
+                group by doctor_id) di
+        left join doctor d on d.doctor_id = di.doctor_id
+        left join clinic c on d.clinic_id = c.clinic_id
+        left join person p on d.tc_no = p.tc_no
+    `, [req.userData.tc_no]);
+        return res.status(200).json(doctors.rows);
+    } catch (error) {
+        return res.status(500).json({
+            ...error
+        });
+    }
+}
+exports.diseaseCountByDoctor = async (req, res) => {
+    try {
+        const people = await pool.query(`select pe.name, pe.surname, pa.height, pa.weight, pi.c
+        from (SELECT patient_id, COUNT(patient_id) as c FROM have_diseases
+                GROUP BY patient_id
+                HAVING COUNT (patient_id) > $1) as pi
+        left join patient pa on pi.patient_id = pa.patient_id
+        left join person pe on pa.tc_no = pe.tc_no
+    `, [req.query.count]);
+        return res.status(200).json(people.rows);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            ...error
+        });
+    }
+}

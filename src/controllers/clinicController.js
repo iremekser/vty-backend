@@ -82,9 +82,7 @@ exports.find = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const clinics = await pool.query(`SELECT * from clinic c
-        right join doctor d on c.clinic_id = d.clinic_id
-        left join person p on d.tc_no = p.tc_no`);
+        const clinics = await pool.query(`select * from view1`);
         return res.status(200).json(clinics.rows);
 
     } catch (error) {

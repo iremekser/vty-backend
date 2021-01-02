@@ -84,7 +84,13 @@ exports.find = async (req, res) => {
 exports.list = async (req, res) => {
     try {
         const allDiseases = await pool.query(`SELECT * from diseases d
-         left join clinic c on d.clinic_id = c.clinic_id`);
+            left join clinic c on d.clinic_id = c.clinic_id
+            except
+            select * from diseases d  
+            left join clinic c on d.clinic_id = c.clinic_id
+            where diseases_id in (select diseases_id from have_diseases
+                                where patient_id = (SELECT patient_id FROM patient WHERE tc_no = $1))`, [req.userData.tc_no]);
+
         return res.status(200).json({ allDiseases: allDiseases.rows });
 
     } catch (error) {

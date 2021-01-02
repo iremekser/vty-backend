@@ -4,4 +4,5 @@ module.exports = {
     FOUND: 'Have Diseases found',
     DELETED: 'Have Diseases deleted',
     UPDATED: 'Have Diseases updated',
+    NOT_CREATED: 'Aynı hastalığı 2 kere ekleyemezsiniz'
 };

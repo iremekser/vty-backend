@@ -6,6 +6,10 @@ exports.create = async (req, res) => {
     try {
         const newQuery = await pool.query("insert into have_appointment( patient_id, doctor_id,appointment_date,appointment_time,loc,description, is_cancelled ) values($1,$2,$3,$4,$5,$6,$7) RETURNING *",
             [req.body.patient_id, req.body.doctor_id, req.body.appointment_date, req.body.appointment_time, req.body.loc, req.body.description, false]);
+        if (newQuery.rowCount === 0)
+            return res.status(400).json({
+                message: appointmentEnums.NOT_CREATED
+            });
         return res.status(200).json({
             message: appointmentEnums.CREATED,
             newQuery
@@ -40,7 +44,9 @@ exports.delete = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { patient_id, doctor_id, appointment_date, appointment_time, loc, description, is_cancelled } = req.body;
-        const appointment = await pool.query("UPDATE have_appointment set patient_id =$1, doctor_id=$2,appointment_date=$3,appointment_time=$4,loc=$5,description=$6, is_cancelled = $7 where appointment_id = $8 RETURNING *",
+        const appointment = await pool.query(`update have_appointment
+            set patient_id =$1, doctor_id=$2,appointment_date=$3,appointment_time=$4,loc=$5,description=$6, is_cancelled = $7
+            where appointment_id = $8 RETURNING *`,
             [patient_id, doctor_id, appointment_date, appointment_time, loc, description, is_cancelled, req.params.appointment_id]);
         if (!appointment) {
             return res.status(404).json({
@@ -77,10 +83,10 @@ exports.cancel = async (req, res) => {
 
 exports.find = async (req, res) => {
     try {
-        const appointment = await pool.query(`SELECT * from have_appointment
+        const appointment = await pool.query(`select * from have_appointment
             left join patient p on ha.patient_id = p.patient_id
             left join doctor d on ha.doctor_id = d.doctor_id
-            WHERE appointment_id = $1`, [req.params.appointment_id]);
+            where appointment_id = $1`, [req.params.appointment_id]);
         console.log(appointment);
 
         if (!appointment) {
@@ -109,16 +115,17 @@ exports.list = async (req, res) => {
             left join doctor d on a.doctor_id = d.doctor_id
             left join person p2 on d.tc_no = p2.tc_no
             left join clinic c  on d.clinic_id = c.clinic_id
-            where a.patient_id = (SELECT patient_id FROM patient pp WHERE pp.tc_no=$1)`, [req.query.tc_no]);
+            where a.patient_id = (SELECT patient_id FROM patient pp WHERE pp.tc_no=$1)
+            order by a.appointment_date desc`, [req.query.tc_no]);
         }
         else
             appointments = await pool.query(`SELECT * from have_appointment ha
             left join patient p on ha.patient_id = p.patient_id
             left join doctor d on ha.doctor_id = d.doctor_id
+            order by ha.appointment_date desc
             `);
-        let ascAppointments = appointments.rows.sort((a, b) => a.appointment_date - b.appointment_date);
 
-        return res.status(200).json({ appointments: ascAppointments });
+        return res.status(200).json({ appointments });
 
     } catch (error) {
         return res.status(500).json({

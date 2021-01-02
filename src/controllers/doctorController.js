@@ -38,8 +38,8 @@ exports.delete = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { tc_no, salary, clinic_id, hospital_id } = req.body;
-        const doctor = await pool.query("UPDATE doctor set tc_no = $1, salary = $2, clinic_id = $3, hospital_id = $4 where doctor_id = $5 RETURNING *",
-            [tc_no, salary, clinic_id, hospital_id, req.params.doctor_id]);
+        const doctor = await pool.query("UPDATE doctor set salary = $1, clinic_id = $2, hospital_id = $3 where doctor_id = $4 RETURNING *",
+            [salary, clinic_id, hospital_id, req.params.doctor_id]);
         if (!doctor) {
             return res.status(404).json({
                 message: doctorEnums.NOT_FOUND
@@ -107,9 +107,18 @@ exports.find = async (req, res) => {
 
 exports.list = async (req, res) => {
     try {
-        const doctors = await pool.query(`select * from doctor d
+        let doctors;
+        if (req.query.hospital_id) {
+            doctors = await pool.query("select fonksiyon2($1)", [req.query.hospital_id])
+        }
+        else if (req.query.clinic_id) {
+            doctors = await pool.query("select fonksiyon($1)", [req.query.clinic_id])
+        }
+        else {
+            doctors = await pool.query(`select * from doctor d
         left join person p on d.tc_no = p.tc_no
         left join clinic c on d.clinic_id = c.clinic_id`);
+        }
         return res.status(200).json(doctors.rows);
 
     } catch (error) {

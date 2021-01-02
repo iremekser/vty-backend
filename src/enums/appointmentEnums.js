@@ -4,5 +4,6 @@ module.exports = {
     FOUND: 'Appointment found',
     DELETED: 'Appointment deleted',
     UPDATED: 'Appointment updated',
-    IS_CANCELLED_UPDATED: 'Appointment is_cancelled updated'
+    IS_CANCELLED_UPDATED: 'Appointment is_cancelled updated',
+    NOT_CREATED: 'Bugünden önceki bir tarihe randevu alamazsınız!'
 };

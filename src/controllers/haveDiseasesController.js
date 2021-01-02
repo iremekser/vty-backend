@@ -6,6 +6,11 @@ exports.create = async (req, res) => {
     try {
         const newQuery = await pool.query("INSERT INTO have_diseases (diseases_id, patient_id) values ($1,$2) RETURNING * ",
             [req.body.diseases_id, req.body.patient_id]);
+        if (newQuery.rowCount === 0) {
+            return res.status(400).json({
+                message: haveDiseasesEnums.NOT_CREATED
+            });
+        }
         return res.status(200).json({
             message: haveDiseasesEnums.CREATED,
             diseases: newQuery.rows[0]
